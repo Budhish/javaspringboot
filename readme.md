@@ -1,5 +1,5 @@
 ## What is it?
-This source  code ii an Spring Boot web application (mvc + thymeleaf).
+This source  code is an Spring Boot web application (mvc + thymeleaf).
  
 Tested with
 * Docker 19.03
