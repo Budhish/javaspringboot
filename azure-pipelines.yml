@@ -12,13 +12,13 @@ variables:
   azureSubscription: 'a755c6ca-fb40-4424-bbad-a34a193e97f8'
 
   # Web app name
-  webAppName: 'demojavamadan'
+  webAppName: 'javaspringboot'
 
   # Environment name
-  environmentName: 'demojavamadan'
+  environmentName: 'javaspringboot'
 
   # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  name: app-agent
 
 stages:
 - stage: Build
@@ -27,7 +27,7 @@ stages:
   - job: MavenPackageAndPublishArtifacts
     displayName: Maven Package and Publish Artifacts
     pool:
-      vmImage: $(vmImageName)
+      name: $(name)
 
     steps:
     - task: Maven@3
