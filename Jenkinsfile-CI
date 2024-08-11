@@ -55,13 +55,13 @@ pipeline {
                     }
                 }
             }
-        }
-        post {
-            success {
-                echo 'CI pipeline got succeeded!'
-            }
-            failure {
-                echo 'CI pipeline failed.'
+            post {
+                success {
+                    echo 'CI pipeline got succeeded!'
+                }
+                failure {
+                    echo 'CI pipeline failed.'
+                }
             }
         }
     }
