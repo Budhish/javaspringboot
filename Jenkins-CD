@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    options {
+        timestamps() // Enable timestamps in console output
+    }
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: '1.0', description: 'Tag of the Docker image to deploy')
+        string(name: 'IMAGE_NAME', defaultValue: 'rs-image', description: 'Name of the Docker image to deploy')
+    }
+    environment {
+        AWS_ACCOUNT_ID = '381491906321'
+        AWS_REGION = 'us-east-1'
+        ECR_REPOSITORY = 'rulestudio-javapp'
+        EKS_CLUSTER_NAME = 'rulestudio-eks'
+        DEPLOYMENT_NAME = 'rs-app-deployment'
+        NAMESPACE = 'rs-app'
+    }
+    stages {
+        stage('Check Kubeconfig') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials-rs', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                    }
+                }
+            }
+        }
+
+        stage('Update Deployment') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials-rs', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        def image = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${params.IMAGE_TAG}"
+                        sh """
+                        kubectl set image deployment/${DEPLOYMENT_NAME} ${params.IMAGE_NAME}=${image} --namespace=${NAMESPACE}
+                        kubectl rollout status deployment/${DEPLOYMENT_NAME} --namespace=${NAMESPACE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Validate Setup') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials-rs', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        // Validate AWS credentials and Kubernetes context
+                        sh 'aws sts get-caller-identity'
+                        sh 'kubectl config view'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deployment update to EKS succeeded!'
+        }
+        failure {
+            echo 'Deployment update to EKS failed.'
+        }
+    }
+}
