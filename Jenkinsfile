@@ -21,7 +21,7 @@ pipeline {
          stage('dockerbuild') {
             steps {
                 sh """
-                docker build -t rs-image:1.0 .
+                sudo docker build -t rs-image:1.0 .
                 """
             }
         }
