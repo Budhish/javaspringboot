@@ -1,7 +1,7 @@
 pipeline {
     agent any
         options {
-        timestamps() // Add this line to enable timestamps in the console o/p 
+        timestamps() // Add this line to enable timestamps in  console o/p 
     }
     stages {
         stage('Checkout') {
@@ -9,7 +9,15 @@ pipeline {
                 checkout scmGit(branches: [[name: '*/dev1']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-credentials-java', url: 'https://github.com/Budhish/javaspringboot.git']])
             }
         }
+
+        stage('Terraform init') {
+            steps {
+                sh """
+                mvn install
+                """
+            }
+        }
     }
 }
-   
+
 
