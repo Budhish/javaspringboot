@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+    options {
+        timestamps() // Add this line to enable timestamps in console output
+    }
+    environment {
+        AWS_ACCOUNT_ID = '381491906321'
+        AWS_REGION = 'us-east-1'
+        ECR_REPOSITORY = 'rulestudio-javapp'
+        IMAGE_TAG = '1.0'
+        IMAGE_NAME = 'rs-image'
+    }
+    parameters {
+        string(name: 'DEPLOYMENT_NAME', defaultValue: '<your-deployment-name>', description: 'Kubernetes Deployment Name')
+        string(name: 'EKS_CLUSTER_NAME', defaultValue: 'rulestudio-eks', description: 'rulestudio-eks')
+    }
+    stages {
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        // Update kubeconfig
+                        sh """
+                        aws eks update-kubeconfig --region ${AWS_REGION} --name ${params.EKS_CLUSTER_NAME}
+                        """
+
+                        // Deploy the Docker image to EKS
+                        sh """
+                        kubectl set image deployment/${params.DEPLOYMENT_NAME} ${IMAGE_NAME}=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        kubectl rollout status deployment/${params.DEPLOYMENT_NAME}
+                        """
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deployment to EKS succeeded!'
+        }
+        failure {
+            echo 'Deployment to EKS failed.'
+        }
+    }
+}
