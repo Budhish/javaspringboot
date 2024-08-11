@@ -10,9 +10,6 @@ pipeline {
         ECR_REPOSITORY = 'rulestudio-javapp'
         IMAGE_TAG = '1.0'
         IMAGE_NAME = 'rs-image'
-        EKS_CLUSTER_NAME = 'rulestudio-eks' // Update with your EKS cluster name
-        DEPLOYMENT_NAME = 'rs-app-deployment' // Update with your Kubernetes deployment name
-        NAMESPACE = 'rs-app' // Update with your Kubernetes namespace if needed
     }
     stages {
         stage('Checkout') {
@@ -59,42 +56,12 @@ pipeline {
                 }
             }
         }
-        //adding cd part from here
-        stage('Update Kubeconfig') {
-            steps {
-                script {
-                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials-rs', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                        // Update kubeconfig to use the EKS cluster
-                        sh """
-                        aws eks update-kubeconfig --region ${AWS_REGION} --name rulestudio-eks
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Update Deployment') {
-            steps {
-                script {
-                    // Define the image to be deployed based on parameters
-                    def image = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${params.IMAGE_TAG}"
-
-                    // Update deployment with the new image
-                    sh """
-                    kubectl set image deployment/${DEPLOYMENT_NAME} ${params.IMAGE_NAME}=${image} --namespace=${NAMESPACE}
-                    kubectl rollout status deployment/${DEPLOYMENT_NAME} --namespace=${NAMESPACE}
-                    """
-                }
-            }
-        }
-    }
-    //to here
     post {
         success {
-            echo 'Build and push to ECR succeeded!'
+            echo 'CI pipeline got succeeded!'
         }
         failure {
-            echo 'Build or push to ECR failed.'
+            echo 'CI pipeline failed.'
         }
     }
 }
