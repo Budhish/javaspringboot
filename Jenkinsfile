@@ -1,7 +1,7 @@
 pipeline {
     agent any
         options {
-        timestamps() // Add this line to enable timestamps in console o/p
+        timestamps() // Add this line to enable timestamps in the console o/p 
     }
     stages {
         stage('Checkout') {
