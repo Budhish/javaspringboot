@@ -8,8 +8,8 @@ pipeline {
         AWS_ACCOUNT_ID = '381491906321'   
         AWS_REGION = 'us-east-1' 
         ECR_REPOSITORY = 'rulestudio-javapp'
-        IMAGE_TAG = '2.1.0'    //image version
-        IMAGE_NAME = 'rs-flip-default'
+        IMAGE_TAG = '1.1.0'    //image version
+        IMAGE_NAME = 'rs-flip-home'
     }
     stages {
         stage('Checkout') {
