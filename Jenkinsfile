@@ -10,10 +10,18 @@ pipeline {
             }
         }
 
-        stage('Terraform init') {
+        stage('code build') {
             steps {
                 sh """
                 mvn install
+                """
+            }
+        }
+
+         stage('dockerbuild') {
+            steps {
+                sh """
+                docker build -t rs-image:1.0 .
                 """
             }
         }
