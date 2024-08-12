@@ -12,8 +12,8 @@ public class StartApplication {
 
     @GetMapping("/")
     public String index(final Model model) {
-        model.addAttribute("title", "Flipkart Home page ");
-        model.addAttribute("msg", "Mobiles          Fashion ");
+        model.addAttribute("title", "Flipkart Mobiles page ");
+        model.addAttribute("msg", "10% Discount on Black Friday Sale");
         return "index";
     }
 
