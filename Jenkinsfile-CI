@@ -6,10 +6,10 @@ pipeline {
     environment {
         // Define AWS ECR variables
         AWS_ACCOUNT_ID = '381491906321'   
-        AWS_REGION = 'us-east-1' 
+        AWS_REGION = 'us-east-2' 
         ECR_REPOSITORY = 'rulestudio-javapp'
-        IMAGE_TAG = '3.1.0'    //image version
-        IMAGE_NAME = 'rs-flip-fashion'
+        IMAGE_TAG = '1.1.0'    //image version
+        IMAGE_NAME = 'rs-flip-homepage'
     }
     stages {
         stage('Checkout') {
@@ -37,7 +37,7 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-credentials-rs', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'access-key', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                         // Authenticate Docker to the ECR registry
                         sh """
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
