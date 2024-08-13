@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+    environment {
+        AWS_ACCESS_KEY_ID = credentials ('decccan-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials ('decccan-secret-key')
+        DOCKERHUB_CREDENTIALS = credentials('docker_hub')
+        ENV_CRED = credentials('ENV_DTE_DEV')
+        //Environment variables
+        DOC_CON = 'dte-dev-f1-con'
+        DOC_IMG = 'dte-dev-f1'
+        ECR_REPO_NAME = 'dte-dev-f1'
+        ECR_REPO_URI = '381909288346.dkr.ecr.ap-south-1.amazonaws.com/dte-dev-f1'
+    }
+    options {
+      buildDiscarder(logRotator(numToKeepStr: '3')) 
+      disableConcurrentBuilds() 
+      timestamps() 
+      timeout(time: 25, unit: 'MINUTES')
+    }
+    stages {
+        //checkout the code in stage SCM
+        stage('Clone repository') {
+          steps {
+            cleanWs()
+            checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[credentialsId: 'BITBUCK-CRED', url: 'https://DTEAGRIDEV@bitbucket.org/dteagritech/dteagritech-frontendadmin.git']])
+            echo 'pulled source code'
+            sh 'ls -lrta'
+            }
+        }
+        stage('install Dependencies') {                    
+          steps {
+            sh 'npm cache clean --force'
+            sh 'npm install || exit 1'
+         }
+        }
+        stage('Npm Build') {            
+          steps {
+            //sh 'npm run build || exit 1'  
+            sh 'ps'
+         }
+        }
+        stage('removing image') {            
+          steps {
+            sh 'sudo chmod 777 /var/run/docker.sock'
+            sh 'docker tag ${DOC_IMG}:latest ${ECR_REPO_URI}:1'
+            sh 'docker rmi -f ${DOC_IMG}:latest'   
+            sh 'docker images'
+            sh 'docker ps -a'
+         }
+        }
+        stage('Docker Build') {
+          steps {
+            sh 'docker build -t ${DOC_IMG}:latest .'
+            sh 'docker images'
+         }
+        }
+        stage('docker Deploy') {
+          steps {
+            sh 'docker stop ${DOC_CON} && docker rm ${DOC_CON}' 
+            sh 'docker run -d --name ${DOC_CON} -p 4001:3000 ${DOC_IMG}:latest'
+            sh 'docker ps -a' 
+         }
+        }
+        stage('Docker login and push') {
+          when {
+                expression { true }
+            }
+          steps {
+            sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${ECR_REPO_URI}'
+            //delete image with tag in ECR
+            sh 'aws ecr batch-delete-image --repository-name ${ECR_REPO_NAME} --image-ids imageTag=1 --region ap-south-1'
+            sh 'docker push ${ECR_REPO_URI}:1'
+            sh 'docker rmi ${ECR_REPO_URI}:1'
+         }
+        }
+        }
+        post {
+          always {
+            sh 'docker logout ${ECR_REPO_URI}'
+            cleanWs()
+         }
+        } 
+    }
+	
+	// previois version image would be in the ECR and current version would be in the server for dev and test
