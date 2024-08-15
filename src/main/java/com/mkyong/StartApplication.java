@@ -13,7 +13,7 @@ public class StartApplication {
     @GetMapping("/")
     public String index(final Model model) {
         model.addAttribute("title", "Welcome to Flipkart Fashion page ");
-        model.addAttribute("msg", "Fashion Sale");
+        model.addAttribute("msg", "Fashion Sale!");
         return "index";
     }
 
