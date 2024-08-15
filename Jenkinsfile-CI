@@ -6,12 +6,18 @@ pipeline {
     environment {
         // Define AWS ECR variabless
         AWS_ACCOUNT_ID = '381491906321'   
-        AWS_REGION = 'us-east-2' 
-        ECR_REPOSITORY = 'rulestudio-app'
+        AWS_REGION = 'ap-south-1' 
+        ECR_REPOSITORY = 'ruler-dev'
         IMAGE_TAG = '1.1.1'    //image version
         IMAGE_NAME = 'rs-flip-home'
     }
     stages {
+        stage('Cleanup Workspace') { 
+            steps {
+                deleteDir() // Deletes the workspace
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'git-credentials-java', url: 'https://github.com/Budhish/javaspringboot.git']])
@@ -37,7 +43,7 @@ pipeline {
         stage('Push to ECR') {
             steps {
                 script {
-                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'access-key', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred-mum', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                         // Authenticate Docker to the ECR registry
                         sh """
                         aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
