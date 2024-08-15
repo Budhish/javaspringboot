@@ -8,8 +8,8 @@ pipeline {
         AWS_ACCOUNT_ID = '381491906321'   
         AWS_REGION = 'ap-south-1' 
         ECR_REPOSITORY = 'ruler-dev'
-        IMAGE_TAG = '1.1.1'    //image version
-        IMAGE_NAME = 'rs-flip-home'
+        IMAGE_TAG = '2.1.1'    //image version
+        IMAGE_NAME = 'rs-flip-mobile'
     }
     stages {
         stage('Cleanup Workspace') { 
