@@ -63,7 +63,7 @@ pipeline {
             }
             post {
                 success {
-                    echo 'CI pipeline got succeeded!'
+                    echo 'CI pipeline got succeeded!'  //ci
                 }
                 failure {
                     echo 'CI pipeline failed..'
